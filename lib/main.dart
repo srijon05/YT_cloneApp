@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:ytclone/cores/screens/loader.dart';
 import 'package:ytclone/features/auth/pages/login_page.dart';
 import 'package:ytclone/features/auth/pages/username_page.dart';
-import 'package:ytclone/features/channel/my_channel/pages/channel_settings.dart';
 import 'package:ytclone/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ytclone/home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,7 +49,7 @@ class MyApp extends ConsumerWidget {
               else if(snapshot.connectionState==ConnectionState.waiting){
                 return const Loader();
               }
-              return const MyChannelSettings();
+              return const HomePage();
             },
           );
         },

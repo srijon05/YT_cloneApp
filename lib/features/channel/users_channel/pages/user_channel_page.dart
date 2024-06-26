@@ -1,21 +1,157 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ytclone/cores/screens/error_page.dart';
+import 'package:ytclone/cores/screens/loader.dart';
+import 'package:ytclone/cores/widgets/flat_button.dart';
+import 'package:ytclone/features/auth/provider/user_provider.dart';
+import 'package:ytclone/features/channel/users_channel/provider/channel_provider.dart';
+import 'package:ytclone/features/content/Long_video/parts/post.dart';
 
-class UserChannelPage extends StatelessWidget {
-  const UserChannelPage({super.key});
+class UserChannelPage extends StatefulWidget {
+  final String userId;
+  const UserChannelPage({
+    Key? key,
+    required this.userId,
+  }) : super(key: key);
 
+  @override
+  State<UserChannelPage> createState() => _UserChannelPageState();
+}
+
+class _UserChannelPageState extends State<UserChannelPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.only(top: 20),
           child: Column(
-            children: [
-              Image.asset("assets/images/flutter background.png"),
-            ],
+        children: [
+          Consumer(
+            builder: (context, ref, child) {
+              return ref.watch(anyUserDataProvider(widget.userId)).when(
+                    data: (user) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Image.asset("assets/images/flutter background.png"),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              left: 12, right: 12, top: 18),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 38,
+                                backgroundColor: Colors.grey,
+                                backgroundImage:
+                                    CachedNetworkImageProvider(user.profilePic),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      user.displayName,
+                                      style: const TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      user.username,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.blueGrey,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    RichText(
+                                      text: TextSpan(
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.blueGrey,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        children: [
+                                          TextSpan(
+                                              text:
+                                                  "${user.subscriptions.length} subscriptions   "),
+                                          TextSpan(
+                                              text: "${user.videos} Videos "),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              top: 16, left: 8, right: 20),
+                          child: FlatButton(
+                            text: "SUBSCRIBE",
+                            onPressed: () {},
+                            colour: Colors.red,
+                          ),
+                        ),
+                        user.videos == 0
+                            ? const Center(
+                                child: Text(
+                                  "No videos",
+                                  style: TextStyle(
+                                    fontSize: 23,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              )
+                            : Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 10, top: 14),
+                                child: Text(
+                                  "${user.displayName}'Videos ",
+                                  style: const TextStyle(
+                                    fontSize: 23,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                      ],
+                    ),
+                    error: (error, stackTrace) => const ErrorPage(),
+                    loading: () => const Loader(),
+                  );
+            },
           ),
-        ),
-      ),
+          Consumer(builder: (context, ref, child) {
+            return ref.watch(eachChannelVideosProvider(widget.userId)).when(
+                  data: (videos) => Padding(
+                    padding: EdgeInsets.only(
+                        top: MediaQuery.sizeOf(context).height * 0.2),
+                    child: SizedBox(
+                      height: 75,
+                      child: GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 8.0,
+                          mainAxisExtent: 8.0,
+                        ),
+                        itemCount: videos.length,
+                        itemBuilder: (context, index) {
+                          if (videos.isNotEmpty) {
+                            return Post(video: videos[index]);
+                          }
+                          return const SizedBox();
+                        },
+                      ),
+                    ),
+                  ),
+                  error: (error, stackTrace) => const ErrorPage(),
+                  loading: () => const Loader(),
+                );
+          })
+        ],
+      )),
     );
   }
 }

@@ -1,16 +1,24 @@
-// ignore_for_file: invalid_use_of_visible_for_testing_member
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ytclone/cores/screens/error_page.dart';
 import 'package:ytclone/cores/screens/loader.dart';
 import 'package:ytclone/cores/widgets/image_button.dart';
+import 'package:ytclone/features/account/account_page.dart';
 import 'package:ytclone/features/auth/provider/user_provider.dart';
+import 'package:ytclone/features/content/Long_video/bottom_navigation.dart';
+import 'package:ytclone/features/upload/short_video/upload_bottom_sheet.dart';
+import 'package:ytclone/pages_list.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int currenIndex = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,11 +69,23 @@ class HomePage extends StatelessWidget {
                     return ref.watch(currentUserProvider).when(
                           data: (currentUser) => Padding(
                             padding: const EdgeInsets.only(right: 12),
-                            child: CircleAvatar(
-                              radius: 15,
-                              backgroundColor: Colors.grey,
-                              backgroundImage: CachedNetworkImageProvider(
-                                  currentUser.profilePic),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AccountPage(
+                                      user: currentUser,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: CircleAvatar(
+                                radius: 15,
+                                backgroundColor: Colors.grey,
+                                backgroundImage: CachedNetworkImageProvider(
+                                    currentUser.profilePic),
+                              ),
                             ),
                           ),
                           error: (error, stackTrace) => const ErrorPage(),
@@ -75,8 +95,24 @@ class HomePage extends StatelessWidget {
                 ),
               ],
             ),
+            Expanded(
+              child: pages[currenIndex],
+            ),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavigation(
+        onPressed: (index) {
+          if (index != 2) {
+            currenIndex = index;
+            setState(() {});
+          } else {
+            showModalBottomSheet(
+              context: context,
+              builder: (context) => const CreateBottomSheet(),
+            );
+          }
+        },
       ),
     );
   }
